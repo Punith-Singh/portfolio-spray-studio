@@ -65,16 +65,17 @@ function launch(project) {
     const y = cubicPoint(startY, startY + (startX - outgoingX) * .18, endY - approach, endY, t) - halfHeight;
     const turn = -11 * (1 - t) + landingAngle * t - 18 * Math.sin(2 * Math.PI * t) * (1 - t);
     const unfold = Math.max(0, 1 - 2 * t) ** 3;
-    const swell = 1.5 * Math.sin(Math.PI * t) ** 2;
+    const swell = 2.5 * Math.sin(Math.PI * t) ** 2;
     const scaleX = 1 - .86 * unfold + swell;
     const scaleY = 1 - .48 * unfold + swell;
     const radians = turn * Math.PI / 180;
     const halfSpan = halfWidth * scaleX * Math.abs(Math.cos(radians)) +
       halfHeight * scaleY * Math.abs(Math.sin(radians));
-    const inset = Math.min(halfSpan, overlay.width / 2);
+    const fit = Math.min(1, (overlay.width - 16) / (2 * halfSpan));
+    const inset = halfSpan * fit;
     const x = Math.min(overlay.width - inset, Math.max(inset, centerX)) - halfWidth;
     return {
-      transform: `translate3d(${x}px,${y}px,0) rotate(${turn}deg) scale(${scaleX},${scaleY})`,
+      transform: `translate3d(${x}px,${y}px,0) rotate(${turn}deg) scale(${scaleX * fit},${scaleY * fit})`,
       opacity: Math.min(1, t * 12)
     };
   });
