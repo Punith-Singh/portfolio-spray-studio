@@ -7,10 +7,13 @@ const muzzle = document.querySelector('#muzzle');
 const trigger = document.querySelector('#trigger');
 const floating = document.querySelector('#floating');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const flightDuration = 550;
 
 let sprayed = 0;
 let flight;
 let queued = false;
+let spaceHeld = false;
+let holdTimer;
 
 function animateGrid(previousPositions) {
   for (const [slip, previous] of previousPositions) {
@@ -75,7 +78,7 @@ function launch(project) {
       opacity: Math.min(1, t * 12)
     };
   });
-  flight = flying.animate(frames, { duration: 550, easing: 'cubic-bezier(.18,.42,.26,1)', fill: 'both' });
+  flight = flying.animate(frames, { duration: flightDuration, easing: 'cubic-bezier(.18,.42,.26,1)', fill: 'both' });
 
   trigger.animate([
     { transform: 'rotate(0deg)' },
@@ -93,7 +96,7 @@ function launch(project) {
     project.classList.remove('is-landing');
     flying.remove();
     flight = undefined;
-    if (queued) {
+    if (queued || spaceHeld) {
       queued = false;
       spray();
     }
@@ -120,12 +123,21 @@ function spray() {
   if (shouldAnimate) {
     animateGrid(previousPositions);
     launch(project);
+  } else if (spaceHeld) {
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(spray, flightDuration);
   }
+}
+
+function stopSpaceHold() {
+  spaceHeld = false;
+  clearTimeout(holdTimer);
 }
 
 sprayButton.addEventListener('click', spray);
 launcher.addEventListener('click', spray);
 document.querySelector('#clean').addEventListener('click', event => {
+  stopSpaceHold();
   queued = false;
   flight?.cancel();
   flight = undefined;
@@ -149,8 +161,15 @@ document.addEventListener('keydown', event => {
       focused.closest('button, a, input, textarea, select, [contenteditable]')) return;
 
   event.preventDefault();
-  if (!event.repeat) spray();
+  if (spaceHeld || event.repeat) return;
+  spaceHeld = true;
+  spray();
 });
+
+document.addEventListener('keyup', event => {
+  if (event.code === 'Space') stopSpaceHold();
+});
+window.addEventListener('blur', stopSpaceHold);
 
 window.addEventListener('resize', () => flight?.finish());
 reducedMotion.addEventListener('change', () => flight?.finish());
