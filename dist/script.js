@@ -1,6 +1,50 @@
-const examples=[['ZENWOOD','BRAND IDENTITY','#e43a9f'],['THE DEPOT','DIGITAL EXPERIENCE','#e2be04'],['UI','DESIGN','#39cb94'],['12 KEYS','CREATIVE DIRECTION','#ef810f'],['KEYBALL','BRAND & WEB','#7654c8'],['DEBBIE','VIBE BUILDER','#bee400'],['30 BRANDS','MADE WITH CARE','#181819'],['SKETCH','IDEAS IN MOTION','#e13a9f'],['FIGMA','DESIGN TOOL','#f5c50e'],['HELLO@','SAY HELLO','#3258e9'],['CLAUDE','CREATIVE PLAY','#29bf8a'],['LOOK CLOSE','A LITTLE DETAIL','#e87217'],['REACT','BUILDING BLOCKS','#7250d3'],['50 APPS','BUILT & DREAMED','#c5e900'],['BUILD','KEEP MAKING','#222'],['MOTION','MAKE IT MOVE','#21b3db'],['2026','AND BEYOND','#c7c6bd']];
-const slips=document.querySelector('#slips'), count=document.querySelector('#count'), launcher=document.querySelector('#launcher'), floating=document.querySelector('#floating');let sprayed=0;
-function addSlip(item,index){const b=document.createElement('button');b.className='slip';b.style.background=item[2];b.style.setProperty('--r',`${(index%5-2)*1.5}deg`);b.innerHTML=`<strong>${item[0]}</strong><small>${item[1]}</small>`;b.title='Example portfolio label';b.addEventListener('click',()=>{b.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:300});});slips.appendChild(b)}
-examples.slice(0,12).forEach(addSlip);
-function spray(){const item=examples[sprayed%examples.length];sprayed++;count.textContent=sprayed;addSlip(item,sprayed);if(slips.children.length>35)slips.firstElementChild.remove();const f=document.createElement('span');f.className='flying';f.textContent=item[0];f.style.background=item[2];f.style.setProperty('--x',`${-130-Math.random()*180}px`);f.style.setProperty('--y',`${(Math.random()-.5)*260}px`);f.style.setProperty('--a',`${Math.random()*180-90}deg`);floating.appendChild(f);setTimeout(()=>f.remove(),900);launcher.classList.add('firing');setTimeout(()=>launcher.classList.remove('firing'),150)}
-document.querySelector('#spray').addEventListener('click',spray);launcher.addEventListener('click',spray);document.querySelector('#clean').addEventListener('click',()=>{slips.replaceChildren();sprayed=0;count.textContent='0'});document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&!/BUTTON|INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();spray()}});
+const slips = document.querySelector('#slips');
+const projects = [...slips.children];
+const count = document.querySelector('#count');
+const launcher = document.querySelector('#launcher');
+const floating = document.querySelector('#floating');
+let sprayed = 0;
+let recoilTimer;
+
+function spray() {
+  const project = projects[sprayed % projects.length];
+  count.textContent = ++sprayed;
+  if (slips.firstElementChild !== project) {
+    slips.prepend(project);
+  }
+
+  const flying = document.createElement('span');
+  flying.className = 'flying';
+  flying.textContent = project.querySelector('strong').textContent;
+  for (const property of ['--slip-bg', '--slip-ink']) {
+    flying.style.setProperty(property, project.style.getPropertyValue(property));
+  }
+  flying.style.setProperty('--x', `${-130 - Math.random() * 180}px`);
+  flying.style.setProperty('--y', `${(Math.random() - 0.5) * 260}px`);
+  flying.style.setProperty('--a', `${Math.random() * 180 - 90}deg`);
+  floating.appendChild(flying);
+  flying.addEventListener('animationend', () => flying.remove(), { once: true });
+
+  launcher.classList.add('firing');
+  clearTimeout(recoilTimer);
+  recoilTimer = setTimeout(() => launcher.classList.remove('firing'), 150);
+}
+
+document.querySelector('#spray').addEventListener('click', spray);
+launcher.addEventListener('click', spray);
+document.querySelector('#clean').addEventListener('click', () => {
+  slips.replaceChildren();
+  floating.replaceChildren();
+  clearTimeout(recoilTimer);
+  launcher.classList.remove('firing');
+  sprayed = 0;
+  count.textContent = '0';
+});
+document.addEventListener('keydown', event => {
+  if (event.code === 'Space' && !event.repeat &&
+      !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
+      !document.activeElement.closest('button, a, input, textarea, select, [contenteditable]')) {
+    event.preventDefault();
+    spray();
+  }
+});
