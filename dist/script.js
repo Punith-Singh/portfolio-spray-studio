@@ -7,7 +7,7 @@ const muzzle = document.querySelector('#muzzle');
 const trigger = document.querySelector('#trigger');
 const floating = document.querySelector('#floating');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const flightDuration = 550;
+const flightDuration = 250;
 
 let sprayed = 0;
 let flight;
@@ -22,7 +22,7 @@ function animateGrid(previousPositions) {
     const y = previous.top - current.top;
     if (x || y) {
       slip.animate([{ translate: `${x}px ${y}px` }, { translate: '0px 0px' }], {
-        duration: 280,
+        duration: 155,
         easing: 'cubic-bezier(.2,.75,.25,1)'
       });
     }
@@ -84,13 +84,13 @@ function launch(project) {
     { transform: 'rotate(0deg)' },
     { transform: 'rotate(-16deg)', offset: .25 },
     { transform: 'rotate(0deg)' }
-  ], { duration: 230, easing: 'ease-out' });
+  ], { duration: 135, easing: 'ease-out' });
 
   launcher.animate([
     { translate: '0px 0px' },
     { translate: '8px -2px', offset: .22 },
     { translate: '0px 0px' }
-  ], { duration: 230, easing: 'ease-out' });
+  ], { duration: 135, easing: 'ease-out' });
 
   flight.onfinish = () => {
     project.classList.remove('is-landing');
