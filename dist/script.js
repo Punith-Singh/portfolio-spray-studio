@@ -4,6 +4,7 @@ const count = document.querySelector('#count');
 const sprayButton = document.querySelector('#spray');
 const launcher = document.querySelector('#launcher');
 const muzzle = document.querySelector('#muzzle');
+const trigger = document.querySelector('#trigger');
 const floating = document.querySelector('#floating');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -60,18 +61,27 @@ function launch(project) {
     const centerX = cubicPoint(startX, outgoingX, endX + kick * .48, endX, t);
     const y = cubicPoint(startY, startY + (startX - outgoingX) * .18, endY - approach, endY, t) - halfHeight;
     const turn = -11 * (1 - t) + landingAngle * t - 18 * Math.sin(2 * Math.PI * t) * (1 - t);
-    const unfold = (1 - t) ** 5;
-    const swell = Math.sin(Math.PI * t) ** 2;
-    const scaleX = 1 - .86 * unfold + .5 * swell;
-    const scaleY = 1 - .48 * unfold + .5 * swell;
-    const leftOverflow = Math.max(0, halfWidth * scaleX - centerX);
-    const x = centerX + leftOverflow * swell - halfWidth;
+    const unfold = Math.max(0, 1 - 2 * t) ** 3;
+    const swell = 1.5 * Math.sin(Math.PI * t) ** 2;
+    const scaleX = 1 - .86 * unfold + swell;
+    const scaleY = 1 - .48 * unfold + swell;
+    const radians = turn * Math.PI / 180;
+    const halfSpan = halfWidth * scaleX * Math.abs(Math.cos(radians)) +
+      halfHeight * scaleY * Math.abs(Math.sin(radians));
+    const inset = Math.min(halfSpan, overlay.width / 2);
+    const x = Math.min(overlay.width - inset, Math.max(inset, centerX)) - halfWidth;
     return {
       transform: `translate3d(${x}px,${y}px,0) rotate(${turn}deg) scale(${scaleX},${scaleY})`,
       opacity: Math.min(1, t * 12)
     };
   });
   flight = flying.animate(frames, { duration: 550, easing: 'cubic-bezier(.18,.42,.26,1)', fill: 'both' });
+
+  trigger.animate([
+    { transform: 'rotate(0deg)' },
+    { transform: 'rotate(-16deg)', offset: .25 },
+    { transform: 'rotate(0deg)' }
+  ], { duration: 230, easing: 'ease-out' });
 
   launcher.animate([
     { translate: '0px 0px' },

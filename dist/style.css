@@ -24,3 +24,4 @@
 .arrow.down{transform:rotate(90deg)}
 .logo .arrow{margin-left:2px;vertical-align:top}
 .stage-note .arrow,.stage-hint .arrow{color:#ed001d}
+#trigger{transform-box:view-box;transform-origin:336px 244px}
