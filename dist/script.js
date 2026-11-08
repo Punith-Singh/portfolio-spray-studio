@@ -57,17 +57,21 @@ function launch(project) {
   // Sample a curved flight using only transform and opacity during playback.
   const frames = Array.from({ length: 25 }, (_, index) => {
     const t = index / 24;
-    const x = cubicPoint(startX, outgoingX, endX + kick * .48, endX, t) - halfWidth;
+    const centerX = cubicPoint(startX, outgoingX, endX + kick * .48, endX, t);
     const y = cubicPoint(startY, startY + (startX - outgoingX) * .18, endY - approach, endY, t) - halfHeight;
     const turn = -11 * (1 - t) + landingAngle * t - 18 * Math.sin(2 * Math.PI * t) * (1 - t);
     const unfold = (1 - t) ** 5;
-    const lift = .045 * Math.sin(Math.PI * t);
+    const swell = Math.sin(Math.PI * t) ** 2;
+    const scaleX = 1 - .86 * unfold + .5 * swell;
+    const scaleY = 1 - .48 * unfold + .5 * swell;
+    const leftOverflow = Math.max(0, halfWidth * scaleX - centerX);
+    const x = centerX + leftOverflow * swell - halfWidth;
     return {
-      transform: `translate3d(${x}px,${y}px,0) rotate(${turn}deg) scale(${1 - .86 * unfold + lift},${1 - .48 * unfold + lift})`,
+      transform: `translate3d(${x}px,${y}px,0) rotate(${turn}deg) scale(${scaleX},${scaleY})`,
       opacity: Math.min(1, t * 12)
     };
   });
-  flight = flying.animate(frames, { duration: 500, easing: 'cubic-bezier(.18,.42,.26,1)', fill: 'both' });
+  flight = flying.animate(frames, { duration: 550, easing: 'cubic-bezier(.18,.42,.26,1)', fill: 'both' });
 
   launcher.animate([
     { translate: '0px 0px' },
